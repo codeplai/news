@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingeniería de Software · ESAN</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg0:#04060f;
+    --bg1:#0a1228;
+    --cyan:#22d3ee;
+    --blue:#3b82f6;
+    --violet:#8b5cf6;
+    --pink:#ec4899;
+    --lime:#a3e635;
+    --amber:#fbbf24;
+    --ink:#eef2ff;
+    --muted:#93a3c7;
+    --esan:#e30613;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;width:100%;overflow:hidden;background:var(--bg0);font-family:'Space Grotesk',sans-serif;color:var(--ink)}
+
+  #stage{
+    position:fixed;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(59,130,246,.25), transparent 60%),
+      radial-gradient(900px 600px at 0% 110%, rgba(139,92,246,.22), transparent 60%),
+      linear-gradient(160deg, var(--bg0), var(--bg1));
+  }
+
+  .slide{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:7vh 8vw;
+    opacity:0;transform:scale(1.02);
+    transition:opacity .9s ease, transform .9s ease;
+    pointer-events:none;
+  }
+  .slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+
+  .kicker{
+    display:inline-flex;align-items:center;gap:.6em;
+    font-family:'Sora';font-weight:700;letter-spacing:.18em;
+    text-transform:uppercase;font-size:1.5vw;color:var(--cyan);
+    margin-bottom:2.2vh;
+  }
+  .kicker .dot{width:.9vw;height:.9vw;border-radius:50%;background:var(--cyan);box-shadow:0 0 18px var(--cyan)}
+
+  h1{font-family:'Sora';font-weight:800;line-height:1.02;font-size:7vw;letter-spacing:-.02em}
+  h2{font-family:'Sora';font-weight:800;line-height:1.04;font-size:4.6vw;letter-spacing:-.01em}
+  .grad{background:linear-gradient(100deg,var(--cyan),var(--blue),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:2.3vw;color:var(--muted);max-width:66ch;margin-top:3vh;line-height:1.45}
+  .lead strong{color:var(--ink)}
+
+  /* stats grid */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5vw;margin-top:5vh;width:100%}
+  .stat{
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:1.6vw;padding:3.2vh 2.4vw;backdrop-filter:blur(8px);
+  }
+  .stat .num{font-family:'Sora';font-weight:800;font-size:5.2vw;line-height:1}
+  .stat .lbl{font-size:1.5vw;color:var(--muted);margin-top:1.4vh;line-height:1.3}
+  .c1{color:var(--cyan)} .c2{color:var(--lime)} .c3{color:var(--pink)} .c4{color:var(--violet)} .c5{color:var(--amber)}
+
+  /* specialties grid */
+  .specs{display:grid;grid-template-columns:repeat(2,1fr);gap:2vw;margin-top:4.5vh;width:100%}
+  .spec{
+    position:relative;
+    background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.12);
+    border-left:.5vw solid var(--cyan);
+    border-radius:1.2vw;padding:2.8vh 2.2vw;
+  }
+  .spec.s1{border-left-color:var(--cyan)}
+  .spec.s2{border-left-color:var(--violet)}
+  .spec.s3{border-left-color:var(--lime)}
+  .spec.s4{border-left-color:var(--amber)}
+  .spec .st{font-family:'Sora';font-weight:800;font-size:2.3vw}
+  .spec .sd{font-size:1.5vw;color:var(--muted);margin-top:1vh;line-height:1.35}
+
+  /* chips */
+  .chips{display:flex;flex-wrap:wrap;gap:1.3vw;margin-top:4.5vh;max-width:84ch}
+  .chip{
+    font-family:'Sora';font-weight:600;font-size:1.9vw;
+    padding:1.3vh 2vw;border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.04);
+  }
+  .chip.hot{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 24px rgba(34,211,238,.25)}
+
+  /* path steps */
+  .path{display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;margin-top:5vh}
+  .step{position:relative;padding-top:2.5vh}
+  .step .n{font-family:'Sora';font-weight:800;font-size:3vw;color:var(--violet)}
+  .step .t{font-size:2vw;font-weight:600;margin-top:1vh}
+  .step .d{font-size:1.4vw;color:var(--muted);margin-top:1vh;line-height:1.35}
+
+  .src{position:absolute;bottom:8.5vh;left:8vw;right:8vw;font-size:1vw;color:#586089}
+
+  .brandbar{
+    position:fixed;top:4vh;left:8vw;right:8vw;z-index:20;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .logo{font-family:'Sora';font-weight:800;font-size:1.9vw;letter-spacing:-.01em}
+  .logo .e{color:var(--esan);background:#fff;padding:.1em .4em;border-radius:.3em;margin-right:.4em}
+  .tag{font-size:1.3vw;color:var(--muted);font-weight:500}
+
+  .dots{position:fixed;bottom:4vh;left:50%;transform:translateX(-50%);display:flex;gap:1.1vw;z-index:20}
+  .pdot{width:1vw;height:1vw;border-radius:50%;background:rgba(255,255,255,.2);transition:all .4s}
+  .pdot.on{background:var(--cyan);width:3.4vw;border-radius:999px;box-shadow:0 0 16px var(--cyan)}
+
+  .bar{position:fixed;top:0;left:0;height:.55vh;background:linear-gradient(90deg,var(--cyan),var(--violet));z-index:30;width:0%}
+
+  .big-num{font-family:'Sora';font-weight:800;font-size:12vw;line-height:.9;letter-spacing:-.03em}
+  .cta{font-family:'Sora';font-weight:800;font-size:3.6vw;margin-top:3.5vh}
+  .cta .grad{filter:drop-shadow(0 0 30px rgba(139,92,246,.35))}
+
+  /* facts inline row */
+  .facts{display:flex;gap:5vw;margin-top:5vh;flex-wrap:wrap}
+  .fact .fn{font-family:'Sora';font-weight:800;font-size:4vw;line-height:1}
+  .fact .fl{font-size:1.5vw;color:var(--muted);margin-top:.8vh}
+
+  /* ===== RESPONSIVE · móviles y pantallas angostas ===== */
+  @media (max-width: 768px), (orientation: portrait) and (max-width: 900px){
+    html,body{overflow:auto}
+
+    .slide{
+      padding:14vh 7vw 16vh;
+      justify-content:flex-start;
+      overflow-y:auto;
+    }
+
+    .brandbar{top:2.4vh;left:5vw;right:5vw;flex-direction:column;align-items:flex-start;gap:.4em}
+    .logo{font-size:5vw}
+    .tag{font-size:3.2vw}
+
+    .kicker{font-size:3.4vw;letter-spacing:.12em;margin-bottom:2.4vh}
+    .kicker .dot{width:2.6vw;height:2.6vw}
+
+    h1{font-size:15vw}
+    h2{font-size:9vw}
+    .lead{font-size:4.6vw;max-width:none;margin-top:3vh}
+
+    .big-num{font-size:26vw}
+    .cta{font-size:8vw;margin-top:3vh}
+
+    /* grillas a una sola columna */
+    .stats{grid-template-columns:1fr;gap:3vh;margin-top:4vh}
+    .stat{border-radius:4vw;padding:3vh 5vw}
+    .stat .num{font-size:13vw}
+    .stat .lbl{font-size:4vw;margin-top:1.2vh}
+
+    .specs{grid-template-columns:1fr;gap:2.4vh;margin-top:4vh}
+    .spec{border-left-width:1.4vw;border-radius:3vw;padding:2.6vh 5vw}
+    .spec .st{font-size:5.6vw}
+    .spec .sd{font-size:4vw}
+
+    .chips{gap:2.4vw;margin-top:4vh;max-width:none}
+    .chip{font-size:4vw;padding:1.2vh 4vw}
+
+    .path{grid-template-columns:1fr 1fr;gap:4vw 4vw;margin-top:4vh}
+    .step .n{font-size:8vw}
+    .step .t{font-size:4.6vw}
+    .step .d{font-size:3.6vw}
+
+    .facts{gap:6vw 8vw;margin-top:4vh}
+    .fact .fn{font-size:9vw}
+    .fact .fn span{font-size:5vw !important}
+    .fact .fl{font-size:3.6vw}
+
+    .src{position:fixed;bottom:9vh;left:5vw;right:5vw;font-size:2.8vw;text-align:center}
+
+    .dots{bottom:3vh;gap:2.4vw}
+    .pdot{width:2.4vw;height:2.4vw}
+    .pdot.on{width:7vw}
+
+    .bar{height:.7vh}
+  }
+
+  /* pantallas muy pequeñas en vertical */
+  @media (max-width: 430px){
+    .path{grid-template-columns:1fr}
+    h1{font-size:17vw}
+  }
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+<div class="brandbar">
+  <div class="logo"><span class="e">ESAN</span>Ingeniería de Software</div>
+  <div class="tag">Construye el software que mueve al mundo</div>
+</div>
+
+<div id="stage">
+
+  <!-- 1 · HERO -->
+  <section class="slide active">
+    <div class="kicker"><span class="dot"></span>El futuro se programa</div>
+    <h1>Ingeniería de<br><span class="grad">Software</span></h1>
+    <p class="lead">Diseña, construye y escala los sistemas que sostienen empresas, ciudades y vidas. No uses la tecnología: <strong>créala</strong>.</p>
+  </section>
+
+  <!-- 2 · WHY NOW (stats) -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>Por qué ahora</div>
+    <h2>Un mercado que <span class="grad">no encuentra</span> talento</h2>
+    <div class="stats">
+      <div class="stat"><div class="num c1">80,000</div><div class="lbl">profesionales TI que el Perú necesita — OIT</div></div>
+      <div class="stat"><div class="num c2">65%</div><div class="lbl">de empleadores no encuentra talento tech — ManpowerGroup 2024</div></div>
+      <div class="stat"><div class="num c3">90%</div><div class="lbl">de las búsquedas laborales ya son tecnológicas — Gestión 2026</div></div>
+    </div>
+  </section>
+
+  <!-- 3 · THE GAP big number -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>La oportunidad</div>
+    <div class="big-num grad">17,000</div>
+    <p class="lead">puestos TIC <strong>sin cubrir hoy</strong> en el Perú. Cada vacante vacía es una carrera esperando por ti.</p>
+  </section>
+
+  <!-- 4 · EXPORT (Peru software) -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>El software peruano sale al mundo</div>
+    <h2>Perú <span class="grad">exporta talento</span> digital</h2>
+    <div class="facts">
+      <div class="fact"><div class="fn c1">US$ 3,634<span style="font-size:2vw"> M</span></div><div class="fl">exportación de servicios del Perú<br>(solo 1er semestre 2025) — BCRP / Gestión</div></div>
+      <div class="fact"><div class="fn c4">~20%</div><div class="fl">son servicios basados en<br>conocimiento y tecnología</div></div>
+      <div class="fact"><div class="fn c5">US$ 18,000<span style="font-size:2vw"> M</span></div><div class="fl">meta nacional de exportación<br>de servicios — MINCETUR</div></div>
+    </div>
+    <p class="lead" style="margin-top:4vh">Desde Lima se construye software para clientes en EE.UU., Europa y Latinoamérica. <strong>Tú puedes ser parte de esa exportación.</strong></p>
+  </section>
+
+  <!-- 5 · SPECIALTIES (4 reales) -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>Tus caminos · 4 especialidades</div>
+    <h2>Elige <span class="grad">tu especialidad</span></h2>
+    <div class="specs">
+      <div class="spec s1"><div class="st">AI Software Developer</div><div class="sd">Machine Learning, IA Generativa y sistemas inteligentes basados en agentes.</div></div>
+      <div class="spec s2"><div class="st">Software Architecture</div><div class="sd">Microservicios, cloud-native, APIs y sistemas distribuidos a gran escala.</div></div>
+      <div class="spec s3"><div class="st">DevOps</div><div class="sd">CI/CD, DevSecOps, contenedores y automatización de despliegues.</div></div>
+      <div class="spec s4"><div class="st">Negocios de Software</div><div class="sd">Product management, estrategia, marketing tech y lanzamiento de productos.</div></div>
+    </div>
+  </section>
+
+  <!-- 6 · WHAT YOU BUILD (de la malla) -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>Lo que dominarás</div>
+    <h2>Más que <span class="grad">programar</span></h2>
+    <div class="chips">
+      <span class="chip hot">Inteligencia Artificial Generativa</span>
+      <span class="chip">Machine Learning</span>
+      <span class="chip hot">Cloud &amp; Sistemas Distribuidos</span>
+      <span class="chip">DevOps &amp; DevSecOps</span>
+      <span class="chip">Robótica</span>
+      <span class="chip">Ciberseguridad &amp; Ethical Hacking</span>
+      <span class="chip hot">Realidad Virtual e Inmersiva</span>
+      <span class="chip">Desarrollo de Videojuegos</span>
+      <span class="chip">Diseño de APIs</span>
+      <span class="chip">UX/UI</span>
+    </div>
+  </section>
+
+  <!-- 7 · WHY ESAN (de la malla) -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>Por qué ESAN</div>
+    <h2>Ingeniería con <span class="grad">visión de negocio</span></h2>
+    <div class="path">
+      <div class="step"><div class="n">200</div><div class="t">créditos · 5 años</div><div class="d">Plan 2025 con IA, cloud y robótica desde los primeros ciclos.</div></div>
+      <div class="step"><div class="n">2</div><div class="t">Electivos internacionales</div><div class="d">Experiencia global integrada a tu formación.</div></div>
+      <div class="step"><div class="n">Capstone</div><div class="t">+ Proyecto Startup</div><div class="d">Lanza un producto digital real ante un comité de inversión.</div></div>
+      <div class="step"><div class="n">ICPC</div><div class="t">Programación competitiva</div><div class="d">Compite con las mejores universidades del mundo.</div></div>
+    </div>
+  </section>
+
+  <!-- 8 · CTA -->
+  <section class="slide">
+    <div class="kicker"><span class="dot"></span>Tu turno · Admisión abierta</div>
+    <h2>El mundo necesita<br>quien lo <span class="grad">construya</span></h2>
+    <div class="cta"><span class="grad">Estudia Ingeniería de Software en ESAN</span></div>
+    <p class="lead">Sé el ingeniero que el Perú exporta al mundo. Conversa con nosotros y descubre tu lugar en el futuro digital.</p>
+  </section>
+
+</div>
+
+<div class="dots" id="dots"></div>
+<div class="src" id="src"></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsWrap = document.getElementById('dots');
+  const bar = document.getElementById('bar');
+  const srcEl = document.getElementById('src');
+  const DURATION = 8000;
+
+  const sources = [
+    "",
+    "Fuentes: OIT · Encuesta de Escasez de Talento ManpowerGroup 2024 · Diario Gestión 2026",
+    "Fuente: déficit de perfiles TIC en el Perú · Ditech Group 2025",
+    "Fuentes: BCRP · Diario Gestión 2025 · MINCETUR (PENX)",
+    "Especialidades del Plan de Estudios 2025 · Carrera de Ingeniería de Software ESAN",
+    "Cursos del Plan de Estudios 2025 · ESAN",
+    "Plan de Estudios 2025 · Carrera de Ingeniería de Software ESAN",
+    ""
+  ];
+
+  slides.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='pdot'+(i===0?' on':'');
+    dotsWrap.appendChild(d);
+  });
+  const pdots = Array.from(document.querySelectorAll('.pdot'));
+
+  let idx = 0;
+  function show(n){
+    slides[idx].classList.remove('active');
+    pdots[idx].classList.remove('on');
+    idx = (n+slides.length)%slides.length;
+    slides[idx].classList.add('active');
+    pdots[idx].classList.add('on');
+    srcEl.textContent = sources[idx] || "";
+    restartBar();
+  }
+
+  let start;
+  function restartBar(){ start = performance.now(); }
+  function tick(now){
+    if(!start) start = now;
+    const pct = Math.min(100, ((now-start)/DURATION)*100);
+    bar.style.width = pct+'%';
+    if(pct>=100){ show(idx+1); }
+    requestAnimationFrame(tick);
+  }
+  srcEl.textContent = sources[0] || "";
+  requestAnimationFrame(tick);
+
+  window.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'||e.key===' ') show(idx+1);
+    if(e.key==='ArrowLeft') show(idx-1);
+    if(e.key.toLowerCase()==='f'){ document.documentElement.requestFullscreen?.(); }
+  });
+
+  // Navegación por gestos táctiles (swipe horizontal) en móviles
+  let touchX = null, touchY = null;
+  const stage = document.getElementById('stage');
+  stage.addEventListener('touchstart', e=>{
+    touchX = e.changedTouches[0].clientX;
+    touchY = e.changedTouches[0].clientY;
+  }, {passive:true});
+  stage.addEventListener('touchend', e=>{
+    if(touchX===null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    const dy = e.changedTouches[0].clientY - touchY;
+    // swipe horizontal claro (evita confundir con scroll vertical)
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){
+      show(dx < 0 ? idx+1 : idx-1);
+    }
+    touchX = touchY = null;
+  }, {passive:true});
+</script>
+</body>
+</html>

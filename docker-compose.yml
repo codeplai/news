@@ -1,0 +1,20 @@
+services:
+  news:
+    build: .
+    image: news-isoftesan:latest
+    container_name: news-isoftesan
+    restart: unless-stopped
+    networks:
+      - edge
+    # Publicar 8081 es opcional (solo para probar local). Traefik enruta por la red interna.
+    ports:
+      - "8081:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.news.rule=Host(`news.isoftesan.dev`)"
+      - "traefik.http.routers.news.tls.certresolver=cf"
+      - "traefik.http.services.news.loadbalancer.server.port=80"
+
+networks:
+  edge:
+    external: true
